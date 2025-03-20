@@ -10,7 +10,7 @@ class HexModel:
     def make_move(self, coord):
         i = coord[0] 
         j = coord[1]
-        if self.board == None:
+        if self.board[i][j] == None:
             self.board[i][j] = self.current_player
             self.current_player = 'Blue' if self.current_player == 'Red' else 'Red'
             return True

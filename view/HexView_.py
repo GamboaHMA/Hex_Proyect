@@ -1,9 +1,9 @@
 import pygame
 import math
-from model import HexModel
+from model import HexModel_
 
 class HexView:
-    def __init__(self, model:HexModel.HexModel, screen_size=600):
+    def __init__(self, model:HexModel_.HexModel, screen_size=600):
         self.model = model
         self.screen_size = screen_size
         self.cell_size = screen_size // model.size
@@ -23,7 +23,8 @@ class HexView:
 
                 if self.model.board[row][col]:
                     ratio = self.cell_size // 2 - self.cell_size // 10
-                    pygame.draw.polygon(self.screen, (self.colors[self.model.board[row][col]]), ratio, 0)
+                    token_vertices = get_hex_vertices((x,y), ratio)
+                    pygame.draw.polygon(self.screen, (self.colors[self.model.board[row][col]]), token_vertices, 0)
 
         pygame.display.flip()
 
@@ -74,7 +75,7 @@ def get_hex_vertices(center, ratio):
     vertices = []
     for i in range(6):
         angle = 2 * math.pi / 6*i
-        vertice_x = x + ratio * math.cos(angle)
-        vertice_y = y + ratio * math.sin(angle)
+        vertice_x = int(x + ratio * math.cos(angle))
+        vertice_y = int(y + ratio * math.sin(angle))
         vertices.append((vertice_x, vertice_y))
     return vertices
