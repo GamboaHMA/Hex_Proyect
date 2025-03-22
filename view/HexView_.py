@@ -46,7 +46,8 @@ class HexView:
         if self.model.make_move((row, col)):
             self.draw_board()
             if self.model.game_over():
-                print(f"jugador {self.model.current_player} ha ganado")
+                self.model.current_player
+                print(f"jugador {self.model.get_not_cuurent_player()} ha ganado")
                 pygame.quit()
                 exit()
 
