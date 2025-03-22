@@ -1,36 +1,48 @@
 import pygame
 import math
-from model import HexModel_
+from model.HexModel_ import *
+
+PROPORTION = 1.6  # proporcion entre la diagonal mayor con respecto a la diagonal menor del rombo que forman los sizexsize casillas hexagonales
+
+class HexCell:
+    def __init__(self, model_coords, screen_coords):
+        self.model_coords = model_coords
+        self.screen_coords = screen_coords
 
 class HexView:
-    def __init__(self, model:HexModel_.HexModel, screen_size=600):
+    def __init__(self, model:HexModel, screen_size=600):
         self.model = model
         self.screen_size = screen_size
-        self.cell_size = screen_size // model.size
+        self.cell_size = int(screen_size // model.size // PROPORTION)
+        self.view_hex_matrix = get_view_hex_matrix(self.model, self.screen_size, self.cell_size)
         pygame.init()
         self.screen = pygame.display.set_mode((screen_size, screen_size))
         self.colors = {'Red': (255, 0, 0), 'Blue': (0, 0, 255)}
 
     def draw_board(self):
         self.screen.fill((255, 255, 255))
-        for row in range(self.model.size):
-            for col in range(self.model.size):
-                x = col * self.cell_size + self.cell_size // 2
-                y = row * self.cell_size + self.cell_size // 2
-                vertices = get_hex_vertices((x,y), self.cell_size // 2)
+        for row in self.view_hex_matrix:
+            for hex in row:
+                hex_:HexCell = hex
+                x_screen = hex_.screen_coords[0]
+                y_screen = hex_.screen_coords[1]
+                vertices = get_hex_vertices((x_screen,y_screen), self.cell_size // 2)
 
                 pygame.draw.polygon(self.screen, (0,0,0), vertices, 1)
 
-                if self.model.board[row][col]:
+                x_model = hex_.model_coords[0]
+                y_model = hex_.model_coords[1]
+                if self.model.board[x_model][y_model]:
                     ratio = self.cell_size // 2 - self.cell_size // 10
-                    token_vertices = get_hex_vertices((x,y), ratio)
-                    pygame.draw.polygon(self.screen, (self.colors[self.model.board[row][col]]), token_vertices, 0)
+                    token_vertices = get_hex_vertices((x_screen,y_screen), ratio)
+                    pygame.draw.polygon(self.screen, (self.colors[self.model.board[x_model][y_model]]), token_vertices, 0)
 
         pygame.display.flip()
 
     def handle_click(self, pos):
-        row = pos[1] // self.cell_size
-        col = pos[0] // self.cell_size
+        cell_clicked:HexCell = get_cell_clicked(self.view_hex_matrix, self.model.size, self.screen_size, pos)
+        row = cell_clicked.model_coords[0]
+        col = cell_clicked.model_coords[1]
         if self.model.make_move((row, col)):
             self.draw_board()
             if self.model.game_over():
@@ -79,3 +91,74 @@ def get_hex_vertices(center, ratio):
         vertice_y = int(y + ratio * math.sin(angle))
         vertices.append((vertice_x, vertice_y))
     return vertices
+
+
+def get_view_hex_matrix(model_board:HexModel, screen_size, cell_size):
+    result = []
+    count = 1
+    multiplier = 1
+
+    size = model_board.size
+    minor_diagonal_long = int(screen_size // PROPORTION)
+    
+    x_init = int(minor_diagonal_long // 2) # para asignarle la posicion en la pantalla
+    y = int(cell_size // 2)
+
+    while(count != 0):
+                                                                                           
+        if multiplier > 0:                                                 #                /\
+            hex_file_model_coords = distribute_n_in_n_plus_1_spaces(count) #               /  \
+        else:                                                              #               \  /
+            hex_file_model_coords = distribute_n_in_n_plus_1_spaces(count, size - count)  # \/
+        x = x_init - int((len(hex_file_model_coords)-1) * (cell_size // 2))
+        hex_file = [] # fila del rombo que forman las celdas hexagonales
+        for model_coords in hex_file_model_coords:
+            screen_coords = (x, y)
+            if model_coords[0] == 11:
+                asd= 1
+            hex_cell = HexCell(model_coords, screen_coords)
+            hex_file.append(hex_cell)
+            x = x + cell_size
+
+        result.append(hex_file)
+                                                           # es lo que va avanzando el eje de las Y, ya que si Y divide a hex a la mitad,
+        #y = int(y + (math.sqrt(int(cell_size//2) + cell_size))) # de un hexagono a otro a cell_size de dist, y de un hexagono no partido por la mitad por Y a Y hay cell_size de dist 
+        y = y + int(math.sqrt(cell_size**2 - int((cell_size//2)**2)))
+        if count == size:
+            multiplier = multiplier*-1
+        count += multiplier
+    
+    return result
+
+
+def distribute_n_in_n_plus_1_spaces(n, extra=0):
+    if n == 1 and extra == 1:
+        return [(0,0)]
+    elif n == 1 and extra != 0:
+        return [(extra, extra)]
+    else:
+        points = []
+        for i in range(n):
+            points.append((n-1-i + extra, i + extra))
+        return points
+    
+def get_cell_clicked(view_hex_matrix, cell_size, screen_size, pos):
+    minor_dist = float('inf')
+    min_hex = None
+    for row in view_hex_matrix:
+        for hex in row:
+            hex_:HexCell = hex
+            point = hex_.screen_coords
+            dist = euclidian_dist(point, pos)
+            if dist <= minor_dist:
+                minor_dist = dist
+                min_hex = hex_
+    return min_hex
+
+
+def euclidian_dist(p1, p2):
+    result = 0
+    for i in range(len(p1)):
+        result = result + (p1[i] - p2[i]) 
+
+    return result
