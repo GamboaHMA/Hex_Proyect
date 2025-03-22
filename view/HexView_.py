@@ -87,8 +87,8 @@ def get_hex_vertices(center, ratio):
     vertices = []
     for i in range(6):
         angle = 2 * math.pi / 6*i
-        vertice_x = int(x + ratio * math.cos(angle))
-        vertice_y = int(y + ratio * math.sin(angle))
+        vertice_x = int(x + ratio * math.sin(angle))
+        vertice_y = int(y + ratio * math.cos(angle))
         vertices.append((vertice_x, vertice_y))
     return vertices
 
@@ -159,6 +159,6 @@ def get_cell_clicked(view_hex_matrix, cell_size, screen_size, pos):
 def euclidian_dist(p1, p2):
     result = 0
     for i in range(len(p1)):
-        result = result + (p1[i] - p2[i]) 
+        result = result + (p1[i] - p2[i])**2 
 
     return result
