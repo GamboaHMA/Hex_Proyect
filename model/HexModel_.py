@@ -1,3 +1,5 @@
+import random
+
 HEX_DIRECTIONS = [(-1, 0), (-1, 1), (0, 1), (1, 0), (1, -1), (0, -1)]
 
 class HexBoard:
@@ -107,3 +109,62 @@ def get_adjacents(board, board_mask, cell, player):
             result.append(new_c)
 
     return result
+
+class Player:
+    def __init__(self, player_id):
+        self.player_id = player_id
+
+    def play(self, board: HexBoard) -> tuple:
+        raise not NotImplementedError("Implementa este método")
+    
+
+class RandomPlayer(Player):
+    def play(self, board:HexBoard) -> tuple:
+        movements = board.get_possible_moves()
+        i = random.randint(0, len(movements))
+        return movements[i]
+    
+class MinMaxPlayer(Player):
+    def __init__(self, player_id, h): # h-heuristic
+        super().__init__(player_id)
+        self.h = h
+
+    def play(self, board:HexBoard) -> tuple:
+        b_move, value = self.alpha_beta(board, 2, -float('inf'), float('inf'), self.h, True)
+        return b_move
+
+    def alpha_beta(self, board:HexBoard, p:int, a:float, b:float, h, max:bool):  # p-profundidad, a-alpha, b-beta, h-heuristic, max o min 
+        if p == 0:
+            return h(board.board)
+        
+        if max:
+            value = -float('inf')
+            b_move = None  # best_move
+            for move in board.get_possible_moves():
+                new_board = board.clone()
+                new_value = self.alpha_beta(new_board.place_piece(move), p-1, a, b, h, not max)
+                if new_value >= value:
+                    b_move = move
+                    value = new_value
+                    a = max(a, value)
+                    if a >= b:
+                        break
+            return b_move, value
+
+        else:
+            value = float('inf')
+            b_move = None  # best_move
+            for move in board.get_possible_moves():
+                new_board = board.clone()
+                new_value = self.alpha_beta(new_board.place_piece(move), p-1, a, b, h, not max)
+                if new_value <= value:
+                    b_move = move
+                    value = new_value
+                    b = min(b, value)
+                    if a >= b:
+                        break
+            return b_move, value
+
+
+
+         

@@ -14,6 +14,7 @@ class HexCell:
 
 class HexView:
     def __init__(self, model:HexBoard, screen_size=600):
+        self.player = RandomPlayer(2)
         self.model = model
         self.screen_size = screen_size
         self.cell_size = int(screen_size // model.size // PROPORTION)
@@ -59,6 +60,16 @@ class HexView:
                 print(f"jugador {self.model.get_not_cuurent_player()} ha ganado")
                 pygame.quit()
                 exit()
+            pygame.time.delay(500)
+            move:tuple = self.player.play(self.model)
+            self.model.place_piece(move[0], move[1], self.model.current_player)
+            self.draw_board()
+            if self.model.check_connection(self.model.current_player):
+                self.model.current_player
+                print(f"jugador {self.model.get_not_cuurent_player()} ha ganado")
+                pygame.quit()
+                exit()
+
 
     def run(self):
         running = True
@@ -70,6 +81,15 @@ class HexView:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     self.handle_click(pygame.mouse.get_pos())
         pygame.quit()
+
+    def run_human_vs_player(self, player: Player):
+        running = True
+        self.draw_board()
+        while(running):
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                
 
     
 
