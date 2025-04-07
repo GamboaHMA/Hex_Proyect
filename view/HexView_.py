@@ -3,6 +3,9 @@ import math
 from model.HexModel_ import *
 
 PROPORTION = 1.6  # proporcion entre la diagonal mayor con respecto a la diagonal menor del rombo que forman los sizexsize casillas hexagonales
+RL_PS = [((160, 3), (6, 280)), ((378, 306), (208, 592))] # init_redline_point
+BL_PS = [((6, 307), (165, 589)),((209, 5), (372, 280))] # end_redline_point
+
 
 class HexCell:
     def __init__(self, model_coords, screen_coords):
@@ -10,17 +13,23 @@ class HexCell:
         self.screen_coords = screen_coords
 
 class HexView:
-    def __init__(self, model:HexModel, screen_size=600):
+    def __init__(self, model:HexBoard, screen_size=600):
         self.model = model
         self.screen_size = screen_size
         self.cell_size = int(screen_size // model.size // PROPORTION)
         self.view_hex_matrix = get_view_hex_matrix(self.model, self.screen_size, self.cell_size)
         pygame.init()
         self.screen = pygame.display.set_mode((screen_size, screen_size))
-        self.colors = {'Red': (255, 0, 0), 'Blue': (0, 0, 255)}
+        self.colors = {1: (255, 0, 0), 2: (0, 0, 255)}  # 1: Red, 2:Blue
 
     def draw_board(self):
         self.screen.fill((255, 255, 255))
+        pygame.draw.line(self.screen, self.colors[1], RL_PS[0][0], RL_PS[0][1], 5)
+        pygame.draw.line(self.screen, self.colors[1], RL_PS[1][0], RL_PS[1][1], 5)
+        pygame.draw.line(self.screen, self.colors[2], BL_PS[0][0], BL_PS[0][1], 5)
+        pygame.draw.line(self.screen, self.colors[2], BL_PS[1][0], BL_PS[1][1], 5)
+
+
         for row in self.view_hex_matrix:
             for hex in row:
                 hex_:HexCell = hex
@@ -43,9 +52,9 @@ class HexView:
         cell_clicked:HexCell = get_cell_clicked(self.view_hex_matrix, self.model.size, self.screen_size, pos)
         row = cell_clicked.model_coords[0]
         col = cell_clicked.model_coords[1]
-        if self.model.make_move((row, col)):
+        if self.model.place_piece(row, col, self.model.current_player):
             self.draw_board()
-            if self.model.game_over():
+            if self.model.check_connection(self.model.current_player):
                 self.model.current_player
                 print(f"jugador {self.model.get_not_cuurent_player()} ha ganado")
                 pygame.quit()
@@ -94,7 +103,7 @@ def get_hex_vertices(center, ratio):
     return vertices
 
 
-def get_view_hex_matrix(model_board:HexModel, screen_size, cell_size):
+def get_view_hex_matrix(model_board:HexBoard, screen_size, cell_size):
     result = []
     count = 1
     multiplier = 1

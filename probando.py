@@ -1,3 +1,5 @@
+from itertools import count
+
 filas = 3
 columnas = 3
 
@@ -19,3 +21,7 @@ for i in range(filas):
 for i in range(3):
     for j in range(3):
         print(matriz[i][j])
+
+counter = count(0)
+board = [[next(counter) for _ in range(3)] for _ in range(3)]
+print(board)

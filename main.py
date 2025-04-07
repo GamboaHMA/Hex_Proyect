@@ -4,6 +4,6 @@ from view.HexView_ import *
 
 if __name__ == "__main__":
     size = 11
-    model = HexModel(size)
+    model = HexBoard(size)
     view = HexView(model)
     view.run()
