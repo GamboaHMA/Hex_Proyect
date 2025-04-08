@@ -17,8 +17,8 @@ class HexBoard:
         i = row
         j = col
         if self.board[i][j] == 0:
-            self.board[i][j] = self.current_player
-            self.current_player = 2 if self.current_player == 1 else 1
+            self.board[i][j] = player
+            self.current_player = 2 if player == 1 else 1
             return True
         else:
             return False
@@ -121,7 +121,7 @@ class Player:
 class RandomPlayer(Player):
     def play(self, board:HexBoard) -> tuple:
         movements = board.get_possible_moves()
-        i = random.randint(0, len(movements))
+        i = random.randint(0, len(movements) - 1)
         return movements[i]
     
 class MinMaxPlayer(Player):
@@ -131,21 +131,23 @@ class MinMaxPlayer(Player):
 
     def play(self, board:HexBoard) -> tuple:
         b_move, value = self.alpha_beta(board, 2, -float('inf'), float('inf'), self.h, True)
+        print(value)
         return b_move
 
-    def alpha_beta(self, board:HexBoard, p:int, a:float, b:float, h, max:bool):  # p-profundidad, a-alpha, b-beta, h-heuristic, max o min 
+    def alpha_beta(self, board:HexBoard, p:int, a:float, b:float, h, max_:bool):  # p-profundidad, a-alpha, b-beta, h-heuristic, max o min 
         if p == 0:
-            return h(board.board)
+            return 0, h(board.board, self.player_id)
         
-        if max:
+        if max_:
             value = -float('inf')
             b_move = None  # best_move
-            for move in board.get_possible_moves():
+            for x, y in board.get_possible_moves():
                 new_board = board.clone()
-                new_value = self.alpha_beta(new_board.place_piece(move), p-1, a, b, h, not max)
-                if new_value >= value:
-                    b_move = move
-                    value = new_value
+                new_board.place_piece(x, y, self.player_id)
+                new_value = self.alpha_beta(new_board, p-1, a, b, h, not max_)
+                if new_value[1] >= value:  # indexado en 1 porque devuelve una tupla, valor en pos 1
+                    b_move = (x, y)
+                    value = new_value[1]
                     a = max(a, value)
                     if a >= b:
                         break
@@ -154,17 +156,56 @@ class MinMaxPlayer(Player):
         else:
             value = float('inf')
             b_move = None  # best_move
-            for move in board.get_possible_moves():
+            for x, y in board.get_possible_moves():
+                adversary = 2 if self.player_id == 1 else 1
                 new_board = board.clone()
-                new_value = self.alpha_beta(new_board.place_piece(move), p-1, a, b, h, not max)
-                if new_value <= value:
-                    b_move = move
-                    value = new_value
+                new_board.place_piece(x, y, adversary)
+                new_value = self.alpha_beta(new_board, p-1, a, b, h, not max_)
+                if new_value[1] <= value:   # indexado en 1 porque devuelve una tupla, valor en pos 1
+                    b_move = (x, y)
+                    value = new_value[1]
                     b = min(b, value)
                     if a >= b:
                         break
             return b_move, value
 
+def connection_heurisitc(board:HexBoard, player:int):
+    '''
+    Si hay una casilla de player sin vecinos entonces no se añade a set, si hay una casilla que tiene al menos un vecino, entonces
+    se almacena en set tanto la casilla como la vecina, ya que la propia se añade cuando se itera por la casilla vecina, esta heuristica
+    sencilla cuenta cuantas casillas hay conectadas, y devuelve la cantidad de casillas de player menos la cant del adversario y lo divide
+    entre la máxima cantidad entre las dos, así se asegura que se devuelva un valor entre -1 y 1, mientras más se acerque a 1, mejor para 
+    player y peor para adversario, mientras más se acerque a -1 peor para player y mejor para adversario
+    '''
 
+    adversary = 2 if player == 1 else 1
+    p_c = 0  # player_count
+    p_set = set()  # player_set
+
+    a_c = 0  # adversary_count
+    a_set = set()  # adversary_set
+    board_mask = [[True for _ in range(len(board))] for _ in range(len(board))]  # para cumplir con el parametro de get_adjacents()
+
+    for i in range(len(board)):
+        for j in range(len(board)):
+            if board[i][j] == player:
+                adjacents = get_adjacents(board, board_mask,(i,j), player)
+                for adjacent in adjacents:
+                    if adjacent not in p_set:
+                        p_set.add(adjacent)
+                        p_c += 1
+            
+            if board[i][j] == adversary:
+                adjacents = get_adjacents(board, board_mask, (i,j), adversary)
+                for adjacent in adjacents:
+                    if adjacent not in a_set:
+                        a_set.add(adjacent)
+                        a_c += 1
+
+    if (p_c != 0 or a_c != 0):
+        return (p_c - a_c)/max(p_c, a_c)
+    else:
+        return 0
+                
 
          

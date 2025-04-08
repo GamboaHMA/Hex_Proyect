@@ -14,7 +14,8 @@ class HexCell:
 
 class HexView:
     def __init__(self, model:HexBoard, screen_size=600):
-        self.player = RandomPlayer(2)
+        self.player_2 = MinMaxPlayer(2, connection_heurisitc)
+        #self.player_2 = RandomPlayer(2)
         self.model = model
         self.screen_size = screen_size
         self.cell_size = int(screen_size // model.size // PROPORTION)
@@ -61,7 +62,7 @@ class HexView:
                 pygame.quit()
                 exit()
             pygame.time.delay(500)
-            move:tuple = self.player.play(self.model)
+            move:tuple = self.player_2.play(self.model)
             self.model.place_piece(move[0], move[1], self.model.current_player)
             self.draw_board()
             if self.model.check_connection(self.model.current_player):
@@ -82,14 +83,35 @@ class HexView:
                     self.handle_click(pygame.mouse.get_pos())
         pygame.quit()
 
-    def run_human_vs_player(self, player: Player):
+    def run_player_vs_player(self):
         running = True
         self.draw_board()
         while(running):
+            x, y = self.player_1.play(self.model)
+            self.model.place_piece(x, y, self.model.current_player)
+            self.draw_board()
+            if self.model.check_connection(self.model.current_player):
+                self.model.current_player
+                print(f'el jugador {self.model.get_not_cuurent_player()} ha ganado')
+                pygame.quit()
+                exit()
+            pygame.time.delay(500)
+
+            x, y = self.player_2.play(self.model)
+            self.model.place_piece(x, y, self.model.current_player)
+            self.draw_board()
+            if self.model.check_connection(self.model.current_player):
+                self.model.current_player
+                print(f'el jugador {self.model.get_not_cuurent_player()} ha ganado')
+                pygame.quit()
+                exit()
+
+            pygame.time.delay(500)
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                
+        pygame.quit()
 
     
 
