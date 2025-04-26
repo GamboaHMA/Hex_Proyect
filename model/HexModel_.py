@@ -216,66 +216,73 @@ def templates_heuristics(board:HexBoard, player:int, time=1000):
 def get_bridges(board:HexBoard):
     result = []
     set_ = set()
-    for i in len(board.board):
-        for j in len(board.board):
+    for i in range(len(board.board)):
+        for j in range(len(board.board)):
             p = board.board[i][j]
             if p != 0:
-                if i-1 >= 0 and j-1 >= 0:
-                    new_p = board[i-1][j-1]
-                    if p == new_p:     # arriba izquierda
-                        if p not in set_ :
-                            result.append((i,j), (i-1,j-1))
-                            set_.add(p)
-                            if new_p not in set_:
-                                set_.add(new_p)
-                        elif new_p not in set_:
-                            result.append((i,j), (i-1,j-1))
-                            set_.add(new_p)
-                            if p not in set_:
-                                set_.add(p)
+                if i-1 >= 0 and j-1 >= 0:  # arriba izquierda
+                    new_p = board.board[i-1][j-1]
+                    if p == new_p and board.board[i-1][j] == 0 and board.board[i][j-1] == 0:  # verifica tambien que las casillas de en medio esten vacias
+                        if (i,j) not in set_ :
+                            result.append((i,j))
+                            set_.add((i,j))
+                        if (i-1, j-1) not in set_:
+                            result.append((i-1,j-1))
+                            set_.add((i-1,j-1))
                                         
                 if i+1 < len(board.board) and j+1 < len(board.board):  # abajo derecha
                     new_p = board.board[i+1][j+1]
-                    if p == new_p:
-                        if p not in set_ :
-                            result.append((i,j), (i+1,j+1))
-                            set_.add(p)
-                            if new_p not in set_:
-                                set_.add(new_p)
-                        elif new_p not in set_:
-                            result.append((i,j), (i+1,j+1))
-                            set_.add(new_p)
-                            if p not in set_:
-                                set_.add(p)
+                    if p == new_p and board.board[i+1][j] == 0 and board.board[i][j+1] == 0:
+                        if (i,j) not in set_ :
+                            result.append((i,j))
+                            set_.add((i,j))
+                        if (i+1,j+1) not in set_:
+                            result.append((i+1,j+1))
+                            set_.add((i+1,j+1))
+
                 if i-2 >= 0 and j+1 < len(board.board):  # 2 arriba derecha
                     new_p = board.board[i-2][j+1]
-                    if p == new_p:
-                        if p not in set_ :
-                            result.append((i,j), (i-2,j+1))
-                            set_.add(p)
-                            if new_p not in set_:
-                                set_.add(new_p)
-                        elif new_p not in set_:
-                            result.append((i,j), (i-2,j+1))
-                            set_.add(new_p)
-                            if p not in set_:
-                                set_.add(p)
+                    if p == new_p and board.board[i-1][j] == 0 and board.board[i-1][j+1] == 0:
+                        if (i,j) not in set_ :
+                            result.append((i,j))
+                            set_.add((i,j))
+                        if (i-2,j+1) not in set_:
+                            result.append((i-2,j+1))
+                            set_.add((i-2,j+1))
+                        
+                if i-1 >= 0 and j+2 < len(board.board):  # arriba 2 derecha
+                    new_p = board.board[i-1][j+2]
+                    if p == new_p and board.board[i-1][j+1] == 0 and board.board[i][j+1] == 0:
+                        if (i,j) not in set_:
+                            result.append((i,j))
+                            set_.add((i,j))
+                        if (i-1, j+2) not in set_:
+                            result.append((i-1, j+2))
+                            set_.add((i-1, j+2))
 
                 if i+2 < len(board.board) and j-1 >= 0 :  # 2 abajo izquierda
                     new_p = board.board[i+2][j-1]
-                    if p == new_p:
-                        if p not in set_ :
-                            result.append((i,j), (i+2,j-1))
-                            set_.add(p)
-                            if new_p not in set_:
-                                set_.add(new_p)
-                        elif new_p not in set_:
-                            result.append((i,j), (i+2,j-1))
-                            set_.add(new_p)
-                            if p not in set_:
-                                set_.add(p)
+                    if p == new_p and board.board[i+1][j] == 0 and board.board[i+1][j-1] == 0:
+                        if (i,j) not in set_ :
+                            result.append((i,j))
+                            set_.add((i,j))
+                        if (i+2,j-1) not in set_:
+                            result.append((i+2,j-1))
+                            set_.add((i+2,j-1))
+                
+                if i+1 < len(board.board) and j-2 >= 0 :  # abajo 2 izquierda
+                    new_p = board.board[i+1][j-2]
+                    if p == new_p and board.board[i+1][j-1] == 0 and board.board[i][j-1] == 0:
+                        if (i,j) not in set_ :
+                            result.append((i,j))
+                            set_.add((i,j))
+                        if (i+1,j-2) not in set_:
+                            result.append((i+1,j-2))
+                            set_.add((i+1,j-2))
+
         
     return result
+
 
 
 def get_if_bord_unblockable(board:HexBoard):
@@ -284,13 +291,15 @@ def get_if_bord_unblockable(board:HexBoard):
     for i in range(size):
         for j in range(size):
             p = board.board[i][j]
-            
-            if j > size//2:
-                if no_block(board, i, j, size, p, 3):
-                    result.append(i,j)
-            elif j <= size//2:
-                if no_block(board, i, j, size, p, 2):
-                    result.append(i,j)
+            if p == 1:
+                if j > size//2:
+                    if no_block(board, i, j, size, p, 2):
+                        result.append(i,j)
+                else:
+                    if no_block(board, i, j, size, p, 0):
+                        result.append(i,j)
+            elif p == 2:
+                pass
             
 
 def no_block(board:HexBoard, i , j, size, p, dir):  # 0: izq, 1: arriba, 2: derecha, 3: abajo
@@ -370,5 +379,55 @@ def no_block(board:HexBoard, i , j, size, p, dir):  # 0: izq, 1: arriba, 2: dere
             else:
                 return False 
         
-                
-         
+def template_a2(pos, board:HexBoard, player):  # devuelve true si la casilla parametro formase una plantilla en caso de que se hubiera jugado ahi
+    i,j = pos                                  # modificar el como si estuviera a un parametro de si esta de verdad
+    size = len(board.board)
+    if player == 1:
+        if j-1 == 0 and i+1 < size:
+            if board.board[i][j-1] == 0 and board.board[i+1][j-1] == 0:
+                return True
+        if j+1 == size-1 and i-1 >= 0:
+            if board.board[i][j+1] == 0 and board.board[i-1][j+1] == 0:
+                return True
+    elif player == 2:
+        if i+1 == size-1 and j-1 >= 0:
+            if board.board[i+1][j] == 0 and board.board[i+1][j-1] == 0:
+                return True
+        if i-1 == 0 and j-1 >= 0:
+            if board.board[i-1][j-1] == 0 and board.board[i-1][j] == 0:
+                return True
+    
+    return False
+
+def template_a3(pos, board:HexBoard, player):
+    i,j = pos
+    size = len(board.board)
+    if player == 1:
+        if j-2 == 0 and i + 3 < size:
+            if template_a2((i, j-1), board, player) and board.board[i+1][j] == 0 and board.board[i+1][j-1] == 0 and template_a2((i+2, j-1), board, player):  # los iguales a 0 permiten que sean puente
+                return True
+        if j-2 == 0 and i-1 >= 0 and i+2 < size:
+            if template_a2((i+1, j-1), board, player) and board.board[i][j-1] == 0 and board.board[i-1][j] == 0 and template_a2((i-1, j-1), board, player):
+                return True
+        if j+2 == size-1 and i-2 >= 0 and i+1 < size:
+            if template_a2((i-1, j+1), board, player) and board.board[i][j+1] == 0 and board.board[i+1][j] == 0 and template_a2((i+1, j+1), board, player):
+                return True
+        if j+2 == size-1 and i-3 >= 0:
+            if template_a2((i, j+1), board, player) and board.board[i-1][j] == 0 and board.board[i-1][j+1] == 0 and template_a2((i-2, j+1), board, player):
+                return True
+            
+    elif player == 2:
+        if i-2 == 0 and j + 3 < size:
+            if template_a2((i-1, j), board, player) and board.board[i][j+1] == 0 and board.board[i-1][j+1] == 0 and template_a2((i-1, j+2), board, player):  # los iguales a 0 permiten que sean puente
+                return True
+        if i-2 == 0 and j-1 >= 0 and j+2 < size:
+            if template_a2((i-1, j+1), board, player) and board.board[i-1][j] == 0 and board.board[i][j-1] == 0 and template_a2((i-1, j-1), board, player):
+                return True
+        if i+2 == size-1 and j-2 >= 0 and j+1 < size:
+            if template_a2((i+1, j-1), board, player) and board.board[i+1][j] == 0 and board.board[i][j+1] == 0 and template_a2((i+1, j+1), board, player):
+                return True
+        if i+2 == size-1 and j-3 >= 0:
+            if template_a2((i+1, j), board, player) and board.board[i][j-1] == 0 and board.board[i+1][j-1] == 0 and template_a2((i+1, j-2), board, player):
+                return True
+        
+    return False
